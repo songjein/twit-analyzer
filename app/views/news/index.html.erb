@@ -1,0 +1,247 @@
+<style>
+	* { font-family: 'Spoqa Han Sans', serif; }
+
+	.title{
+		font-weight: 1.2em;	
+	}
+	.datetime{
+		color:rgb(170,170,170);
+	}
+
+	.news-container{
+		margin-top: 5px;		
+	}
+
+	.newsname{
+		color: rgb(150,150,150);
+		font-weight: bold;	
+	}
+
+	.selected{
+		background:yellow;
+	}
+
+	#title{
+		color: black;	
+		cursor:pointer;
+	}
+
+	#hot-topics{
+		width: 500px;
+	}
+
+	.hot-topic{
+		color: rgb(150,150,150);		
+		cursor: pointer;
+		white-space: nowrap;
+	}
+
+	#overlay{
+		 position: absolute;
+		 top: 0; left: 0;
+		 background: rgba(0,0,0,0.5);
+		 display: none;
+	}
+
+	#info {
+		font-size: 1.3em;	
+		color : #99E000;
+		cursor: pointer;
+	}
+	#intro{
+		cursor: pointer;
+	}
+
+	#about-service{
+		font-size: 1.3em;
+		color:white;	
+		width: 600px;
+		margin: auto;
+		margin-top: 10%;
+		background: rgba(0,0,0,0.3);
+		padding: 1%;
+	}
+
+
+</style>
+
+<!--<div class="jumbotron" style="background-image: url(<%= image_path 'bg.jpg' %>); background-size: 100% 100%;">-->
+<div class="jumbotron">
+	<center>
+		<div class="container" >
+			<%# ca = ['#EDD200', 'green', 'navy', 'purple'] %>
+			<%# ca[rand(0..4)]%>
+			<a href="/"><span id="title" style="font-weight:bold;font-size:3.5em;">Polatics</span></a>
+			<br>
+			<span style="font-size:1.2em;" ><strong>진보, 보수</strong> 신문기사에 대한 제목 검색이 가능합니다</span>
+			<br>
+			<span style="color:rgb(150,150,150)">- <span style="color:black"><%=time_ago_in_words(HotTopic.last.created_at)%></span> 전에 업데이트 됨 -</span>
+			<br>
+			<a id="intro" >소개말</a>
+			<i id="info" class="fa fa-leaf" aria-hidden="true"></i>
+
+			<div style="margin-top: 30px"></div>
+
+			<div class="form-inline">
+				<div class="form-group" style="width:50%">
+					<input id="search_form" type="text" class="form-control input-lg" style="width:100%" placeholder="검색어를 입력하세요" value="<%=@search_term%>">
+				</div>
+				<button class="btn btn-default btn-lg" id="search_submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</div>
+
+			<div style="margin-top: 30px"></div>
+
+			<div id="hot-topics">
+				핫토픽:
+				<% HotTopic.all.reverse[0..19].reverse.each do |h| %>
+					<span class="hot-topic"><%= h.topic%></span>&nbsp;
+				<% end %>
+			</div>
+
+		</div>
+	</center>
+</div>
+
+
+
+<div class="container">
+	
+	<div style="width:50%; float:left">
+		<% if @lefts.length == 0 %>
+			- 진보 신문의 검색 결과가 없습니다 -
+		<% end %>
+		<div id="infinite-scrolling" style="display:none">
+			<% if @lefts.count < @rights.count %>
+				<%= will_paginate @lefts %>
+			<% else %>
+				<%= will_paginate @rights %>
+			<% end %>
+		</div>
+		<% @lefts.each do |news| %>	
+			<div class="news-container">
+				<span class="title"><%= link_to news.title.html_safe, news.news_url, target: "_blank" %></span>
+				<span class="newsname">@<%= news.news_name%></span>
+				<span class="datetime"><%=time_ago_in_words(news.news_time)%> 전</span>
+				<br>
+			</div>
+		<% end %>
+		<div id="extra-lefts">
+		</div>
+	</div>
+
+	<div style="width:50%; float:left">
+		<% if @rights.length == 0 %>
+			- 보수 신문의 검색 결과가 없습니다 -
+		<% end %>
+		<% @rights.each do |news| %>	
+			<div class="news-container">
+				<span class="title"><%= link_to news.title.html_safe, news.news_url, target: "_blank" %></span>
+				<span class="newsname">@<%= news.news_name%></span>
+				<span class="datetime"><%=time_ago_in_words(news.news_time)%> 전</span>
+				<br>
+			</div>
+		<% end %>
+		<div id="extra-rights">
+		</div>
+	</div>
+
+</div>
+<script>
+	var canAddExtra = true
+	$(function(){
+		if ($('#infinite-scrolling').size() > 0){
+			$(window).on("scroll", function(){
+				more_posts_url = $('.pagination a.next_page').attr('href') 
+				if (canAddExtra && more_posts_url && $(window).scrollTop() > $(document).height() - $(window).height() - 60){
+					canAddExtra = false;
+					$.getScript(more_posts_url,function(data, textStatus, jqxhr){
+						console.log(data)
+						canAddExtra = true
+					})	
+				}
+			})
+		}
+	})
+</script>
+
+<div id="overlay">
+	<div id="about-service">
+			<i style="color:#E1FF36"class="fa fa-balance-scale" aria-hidden="true"></i> <strong>Polatics란?</strong> <br>
+			정치를 의미하는 <u>Politics</u>와 양극성을 의미하는 <u>Polarity</u>의 합성어 입니다.<br>
+			좀 더 균형잡힌 시각으로 세상의 소식을 접하기 위해 만들었습니다.<br>
+			서비스의 좌측에는 진보신문, 우측에는 보수신문기사를 배치하였으며<br>
+			주제어에 대한 검색이 가능합니다 <span style="color:yellow">;D</span></br>
+			<br>
+			<div style="font-size: 0.7em;">
+			- 더 다양한 신문사, 검색 방식 및 분석 결과를 추가할 예정입니다 <br>
+			- 개발에 관심 있으시거나 배워보고 싶은 학생분들은 →<span style="color:orange">jeinsong200@gmail.com</span> 연락주세요<br>
+			- 파이썬(핫토픽), 루비(크롤링), 루비온레일즈(웹서비스) 및 웹언어(html,css,jquery)로 개발하고 있습니다
+			</div>
+	</div>
+</div>
+
+
+
+<script>
+	$(function(){
+
+		// 나중에 하이라이트 펑션에 쓸 함수
+		$("#").click(function(){
+			search_term = $("#search_form").val()
+			$(".title").each(function(index){
+				$(this).html(
+						$(this).html()
+						.replace(search_term, "<span class='selected'>" + search_term +"</span>")
+				)
+			})
+			return false;
+		})				
+
+		$('#search_submit').click(function(){
+			window.location = '/news?search_term=' + $("#search_form").val();
+			return false;
+		})
+
+		<%# search term highlight %>
+		<%# search term highlight %>
+		<% if @search_term %>
+			search_term = $("#search_form").val()
+			$(".title").each(function(index){
+				$(this).html(
+						$(this).html()
+						.replace(search_term, "<span class='selected'>" + search_term +"</span>")
+				)
+			})
+		<% end %>
+
+		// 엔터 이벤트
+		$('#search_form').keyup(function(e) {
+			if (e.keyCode == 13) {
+				window.location = '/news?search_term=' + $("#search_form").val();
+			} 
+		});
+
+		$('.hot-topic').click(function(){
+				window.location = '/news?search_term=' + $(this).html() 
+		})
+
+
+		// search nav item
+		// search nav item
+		$('#info, #intro').click(function(){
+			$('#overlay').css('width', $(window).width())
+							 .css('height', $(window).height())
+							 .show()
+		})
+		
+		$('#overlay').click(function(){
+			 $(this).hide()
+		})
+
+		$('#about-service').click(function(){
+			return false;	
+		})
+
+		
+	})
+</script>

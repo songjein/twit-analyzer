@@ -1,0 +1,1 @@
+python test.py  | grep 'accident\|car\|disaster\|tornado\|terror\|earthquake'
