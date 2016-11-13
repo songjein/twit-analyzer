@@ -198,6 +198,14 @@
 									texts = "" 
 									locs = []  // locations
 
+									// count 평균 계산
+									mean_count = 0;
+									$.each(data, function(idx, obj){
+										mean_count += Number(obj["city"][0]["count"])
+									})
+									//alert('mean : ' + mean_count / data.length)
+									mean_count =  mean_count / data.length
+
 									$.each(data, function(idx, obj){
 										if (Number(obj["city"][0]["count"]) >= mean_count){
 											_lat = (obj["city"][0]["place"]["bounding_box"][0][1] + obj["city"][0]["place"]["bounding_box"][1][1])/2
@@ -217,6 +225,45 @@
 									if (traj_line){
 										traj_line.setMap(null);
 									}
+									
+									// locs를 직선 하나씩으로 쪼개서
+									// locs를 직선 하나씩으로 쪼개서
+									// locs를 직선 하나씩으로 쪼개서
+									lines = []
+									for (i = 1; i < locs.length; i++){
+										tmp = []
+										tmp.push(locs[i-1])
+										tmp.push(locs[i])
+										lines.push(tmp);
+									}
+									//console.log(lines)
+								
+
+									// draw & animate
+									// draw & animate
+									// draw & animate
+									rainbow = ['red', 'orange', 'yellow', 'green', 'blue', 'navy', 'purple']
+									traj_lines = []
+									_i = 0;
+									function drawOneLine(){
+										traj_lines[_i] = new google.maps.Polyline({
+											path: lines[_i]	,
+											icons: [{
+												icon: lineSymbol,
+												offset: '100%'
+											}],
+											strokeColor: rainbow[_i % 7],
+											map: map
+										});
+										_i++;
+										if (_i == lines.length){
+											clearInterval(interval_id);
+										} 
+									}
+									var interval_id = setInterval(drawOneLine, 1000);
+
+									// Create the polyline and add the symbol via the 'icons' property.
+									/*
 									traj_line = new google.maps.Polyline({
 										path: locs,
 										icons: [{
@@ -226,6 +273,7 @@
 										strokeColor: 'green',
 										map: map
 									});
+									*/
 								}	
 								//success
 								//success
