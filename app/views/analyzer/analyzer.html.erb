@@ -242,14 +242,14 @@
 									// draw & animate
 									// draw & animate
 									// draw & animate
-									rainbow = ['red', 'orange', 'yellow', 'green', 'blue', 'navy', 'purple']
+									rainbow = ["rgba(255,102,102,0.8)", "rgba(255,153,051,0.8)", "rgba(255,255,153,0.8)", "rgba(153,255,153,0.8)", "rgba(102,51,255,0.8)", "rgba(51,51,153,0.8)", "rgba(153,051,153,0.8)"]
 									traj_lines = []
 									_i = 0;
 									function drawOneLine(){
 										traj_lines[_i] = new google.maps.Polyline({
 											path: lines[_i]	,
 											icons: [{
-												icon: lineSymbol,
+												icon: (_i == lines.length - 1) ? lineSymbol: null,
 												offset: '100%'
 											}],
 											strokeColor: rainbow[_i % 7],

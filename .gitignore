@@ -18,5 +18,7 @@
 !/tmp/.keep
 *.swp
 
+/shared
+
 # Ignore Byebug command history file.
 .byebug_history
