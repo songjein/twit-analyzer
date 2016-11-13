@@ -20,7 +20,14 @@ class AnalyzerController < ApplicationController
 	end
 
 	def get_stream 
-			
+		require 'json'
+		tmp = [] 
+		Tweet.all.each do |t|
+			tmp << t.to_json
+			t.destroy
+			# 만들어 줌과 동시에 지워주기
+		end
+		render json: tmp
 	end
 
 end

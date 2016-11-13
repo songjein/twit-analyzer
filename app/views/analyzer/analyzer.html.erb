@@ -360,76 +360,6 @@
 						// sentiment end
 						// sentiment end
 						else if (mode == "event"){
-							query = encodeURI(
-								"use dataverse twitter " + 
-								"for $t in dataset ds_tweets " +
-								"where contains($t.text_msg, \"" + keyword + "\" ) " +
-								"return $t; ")
-
-							// CORS 문제 때문에 proxy서버를 이용해야됨
-							// http://adrenal.tistory.com/16
-							proxy = "http://polaris.gachon.ac.kr/analyzer/index?query=";
-
-							$.ajax({
-								url: proxy + query,
-								beforeSend: function(){
-									//https://answers.squarespace.com/questions/139989/loading-gif-for-individual-images.html
-									$('#queryStatus').html("<center><img src='https://d13yacurqjgara.cloudfront.net/users/82092/screenshots/1073359/spinner.gif'></center>")	
-								},
-								success: function(data){
-									texts = "" 
-									textsForSenti = ""
-									locs = []  // locations
-									$.each(data, function(idx, obj){
-										//texts.push(obj["text_msg"])
-										_lat = (obj["place"]["bounding_box"][0][1] + obj["place"]["bounding_box"][1][1])/2
-										_lng= (obj["place"]["bounding_box"][0][0] + obj["place"]["bounding_box"][1][0])/2
-										texts += "<h5>" + (obj["text_msg"]) + "</h5>"
-										textsForSenti += obj["text_msg"] +  "!@#$%"
-										locs.push([parseFloat(_lat), parseFloat(_lng)])
-									})
-
-									// ajax for senti anal -> ajax in ajax.. complex
-									$.ajax({
-										url: "http://sclab.gachon.ac.kr:5000/sentiments",
-										method: 'POST',
-										crossDomain: true,
-										dataType: 'json',
-										data: {
-											texts: textsForSenti	
-										},
-										success: function(data){
-											sentiments = data
-											//alert(data)	
-											$('#queryStatus').html("")
-											$('#queryResult').html(texts)
-
-											// Construct the circle for each value in citymap.
-											// Note: We scale the area of the circle based on the population.
-											for (var i in circles){
-												circles[i].setMap(null);
-											}
-			
-											for (var i in locs) {
-												// Add the circle for this city to the map.
-												circle_color = (sentiments[i] == "0") ? 'rgba(255,0,0,0.7)' : 'rgba(0,255,0,0.7)';
-
-												var cityCircle = new google.maps.Circle({
-													strokeColor: circle_color,
-													strokeOpacity: 0.8,
-													fillColor: circle_color,
-													fillOpacity: 0.35,
-													map: map,
-													center: {lat: locs[i][0] , lng: locs[i][1]},
-													radius: 10000
-												});
-												circles.push(cityCircle)
-											}
-
-										}
-									})
-								}
-							})
 						}
 						// event end
 						// event end
@@ -454,15 +384,70 @@
 						mode = "search"
           })
 
-					// search 버튼 눌렀을 때
+					// event 버튼 눌렀을 때
+					// event 버튼 눌렀을 때
+					// event 버튼 눌렀을 때
           $('#event').click(function(){
-						showBG();
-					  $('#search_input').focus()
-						mode = "event"
+						alert('real time tracking..')
+						mode = 'event'
+						rainbow = ["rgba(255,102,102,0.8)", "rgba(255,153,051,0.8)", "rgba(255,255,153,0.8)", "rgba(153,255,153,0.8)", "rgba(102,51,255,0.8)", "rgba(51,51,153,0.8)", "rgba(153,051,153,0.8)"]
+						_i = 0;
+						proxy = "http://polaris.gachon.ac.kr/analyzer/get_stream";
+						setInterval(function(){
+							$.ajax({
+								url: proxy,
+								beforeSend: function(){
+									//https://answers.squarespace.com/questions/139989/loading-gif-for-individual-images.html
+									$('#queryStatus').prepend("<center id='loading_img' ><img src='https://d13yacurqjgara.cloudfront.net/users/82092/screenshots/1073359/spinner.gif'></center>")	
+								},
+								success: function(data){
+									_i ++;
+									texts = "" 
+									locs = []  // locations
+									// python의 u' 때문에 파싱이 안되는 문제 
+									// http://www.codejs.co.kr/%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EC%97%90%EC%84%9C-replace%EB%A5%BC-replaceall-%EC%B2%98%EB%9F%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0/
+									$.each(data, function(idx, str){
+										t = JSON.parse(str)['tweet'];
+										obj = JSON.parse(t)
+										console.log(obj);
+										//console.log(obj);
+										if (obj["place"])	{
+											_lat = (obj["place"]["bounding_box"]['coordinates'][0][0][1] + obj["place"]["bounding_box"]['coordinates'][0][1][1])/2
+											_lng= (obj["place"]["bounding_box"]['coordinates'][0][2][0] + obj["place"]["bounding_box"]['coordinates'][0][2][0])/2
+											texts += "<h5 style='color:" + rainbow[_i % 7] +"'>" + (obj["text"]) + "</h5>"
+											locs.push([parseFloat(_lat), parseFloat(_lng)])
+										}
+										console.log(locs)
+									})
+									$('#loading_img').hide();
+									$('#queryResult').prepend(texts);
+
+									//for (var i in circles){
+									//	circles[i].setMap(null);
+									//}
+
+									for (var i in locs) {
+										// Add the circle for this city to the map.
+										var cityCircle = new google.maps.Circle({
+											strokeColor: 'red',
+											strokeOpacity: 0.8,
+											fillColor: 'yellow',
+											fillOpacity: 0.35,
+											map: map,
+											center: {lat: locs[i][0] , lng: locs[i][1]},
+											radius: 10000
+										});
+										circles.push(cityCircle)
+									}
+								}
+							})
+						}, 10000);
           })
+					// event 버튼 눌렀을 때
+					// event 버튼 눌렀을 때
+					// event 버튼 눌렀을 때
 
-
-
+					// sentiment 버튼 눌렀을 때
           $('#sentiment').click(function(){
 						showBG();
 					  $('#search_input').focus()
