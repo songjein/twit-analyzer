@@ -24,7 +24,7 @@ class AnalyzerController < ApplicationController
 		tmp = [] 
 		Tweet.all.each do |t|
 			tmp << t.to_json
-			t.destroy
+			#t.destroy
 			# 만들어 줌과 동시에 지워주기
 		end
 		render json: tmp
